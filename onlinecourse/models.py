@@ -48,8 +48,7 @@ class Learner(models.Model):
     social_link = models.URLField(max_length=200)
 
     def __str__(self):
-        return self.user.username + "," + \
-               self.occupation
+        return f"{self.user.username},{self.occupation}"
 
 
 # Course model
@@ -64,8 +63,7 @@ class Course(models.Model):
     is_enrolled = False
 
     def __str__(self):
-        return "Name: " + self.name + "," + \
-               "Description: " + self.description
+        return f"Name: {self.name},Description: {self.description}"
 
 
 # Lesson model
@@ -101,15 +99,12 @@ class Question(models.Model):
     grade = models.IntegerField(default=50)
 
     def __str__(self):
-        return "Question: " + self.content
+        return f"Question: {self.content}"
 
     def is_get_score(self, selected_ids):
         all_answers = self.choice_set.filter(is_correct=True).count()
         selected_correct = self.choice_set.filter(is_correct=True, id__in=selected_ids).count()
-        if all_answers == selected_correct:
-            return True
-        else:
-            return False
+        return all_answers == selected_correct
 
 
 class Choice(models.Model):

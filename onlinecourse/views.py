@@ -41,17 +41,16 @@ def registration_request(request):
 
 def login_request(request):
     context = {}
-    if request.method == "POST":
-        username = request.POST['username']
-        password = request.POST['psw']
-        user = authenticate(username=username, password=password)
-        if user is not None:
-            login(request, user)
-            return redirect('onlinecourse:index')
-        else:
-            context['message'] = "Invalid username or password."
-            return render(request, 'onlinecourse/user_login_bootstrap.html', context)
+    if request.method != "POST":
+        return render(request, 'onlinecourse/user_login_bootstrap.html', context)
+    username = request.POST['username']
+    password = request.POST['psw']
+    user = authenticate(username=username, password=password)
+    if user is not None:
+        login(request, user)
+        return redirect('onlinecourse:index')
     else:
+        context['message'] = "Invalid username or password."
         return render(request, 'onlinecourse/user_login_bootstrap.html', context)
 
 
@@ -114,17 +113,14 @@ def submit(request, course_id):
 
 
 def extract_answers(request):
-    submitted_anwsers = []
-    for key in request.POST:
-        if key.startswith('choice'):
-            value = request.POST[key]
-            choice_id = int(value)
-            submitted_anwsers.append(choice_id)
-    return submitted_anwsers
+    return [
+        int(request.POST[key])
+        for key in request.POST
+        if key.startswith('choice')
+    ]
 
 
 def show_exam_result(request, course_id, submission_id):
-    context = {}
     course = get_object_or_404(Course, pk=course_id)
     submission = Submission.objects.get(id=submission_id)
     answers = submission.choices.all()
@@ -136,7 +132,5 @@ def show_exam_result(request, course_id, submission_id):
         if question.is_get_score(answers):
             user_score += question.grade
     user_score = round(user_score/total_score*100)
-    context['course'] = course
-    context['grade'] = user_score
-    context['choices'] = answers
+    context = {'course': course, 'grade': user_score, 'choices': answers}
     return render(request, 'onlinecourse/exam_result_bootstrap.html', context)
